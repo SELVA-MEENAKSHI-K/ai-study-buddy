@@ -4,17 +4,17 @@ import { BookOpen, Eye, EyeOff, LockKeyhole, Mail, Sparkles } from 'lucide-react
 
 function friendlyError(error) {
   const messages = {
-    'auth/email-already-in-use': 'Indha email-ku account already irukku. Sign in pannunga.',
-    'auth/invalid-credential': 'Email/password sariyaa nu check pannunga.',
-    'auth/invalid-email': 'Valid email address enter pannunga.',
-    'auth/weak-password': 'Password at least 6 characters irukkanum.',
-    'auth/too-many-requests': 'Neraya attempts aagiduchu. Konjam neram kazhichu try pannunga.',
-    'auth/network-request-failed': 'Network connection check pannitu retry pannunga.',
-    'auth/popup-closed-by-user': 'Google sign-in window close aayiduchu. Marubadi try pannunga.',
-    'auth/popup-blocked': 'Browser popup block panniduchu. Popups allow pannitu try pannunga.',
-    'auth/operation-not-allowed': 'Firebase Console-la Google sign-in provider enable pannunga.',
+    'auth/email-already-in-use': 'An account already exists for this email. Please sign in.',
+    'auth/invalid-credential': 'Check that your email and password are correct.',
+    'auth/invalid-email': 'Enter a valid email address.',
+    'auth/weak-password': 'Your password must be at least 6 characters long.',
+    'auth/too-many-requests': 'There have been too many attempts. Please try again later.',
+    'auth/network-request-failed': 'Check your internet connection and try again.',
+    'auth/popup-closed-by-user': 'The Google sign-in window was closed. Please try again.',
+    'auth/popup-blocked': 'Your browser blocked the sign-in window. Allow pop-ups and try again.',
+    'auth/operation-not-allowed': 'Enable Google sign-in in the Firebase console.',
   };
-  return messages[error.code] || 'Login panna mudiyala. Details check pannitu marubadi try pannunga.';
+  return messages[error.code] || 'We could not sign you in. Check your details and try again.';
 }
 
 export default function AuthScreen({ auth, configured, onGuest }) {
@@ -61,11 +61,11 @@ export default function AuthScreen({ auth, configured, onGuest }) {
       <div className="auth-icon"><BookOpen size={22}/></div>
       <p className="eyebrow">YOUR PERSONAL LEARNING SPACE</p>
       <h1 id="auth-title">{isSignup ? 'Create your account' : 'Welcome back'}</h1>
-      <p className="auth-copy">{isSignup ? 'Account create pannitu learning start pannunga.' : 'Sign in pannitu learning continue pannunga.'}</p>
+      <p className="auth-copy">{isSignup ? 'Create an account to start learning.' : 'Sign in to continue learning.'}</p>
 
       {!configured && <div className="auth-setup" role="status">
         <strong>Firebase setup pending</strong>
-        <p>Firebase Console-la Email/Password sign-in enable panni, Vercel project-ku Firebase web config environment variables add pannina login work aagum.</p>
+        <p>Enable Email/Password sign-in in Firebase, then add your Firebase web configuration to the Vercel project.</p>
       </div>}
 
       {configured && <>
@@ -81,10 +81,10 @@ export default function AuthScreen({ auth, configured, onGuest }) {
         <div className="auth-input"><LockKeyhole size={17}/><input id="auth-password" type={showPassword ? 'text' : 'password'} autoComplete={isSignup ? 'new-password' : 'current-password'} minLength={6} required value={password} onChange={event => setPassword(event.target.value)} placeholder="At least 6 characters"/><button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}</button></div>
         {error && <p className="auth-error" role="alert">{error}</p>}
         <button className="auth-submit" disabled={busy}>{busy ? 'Please wait…' : isSignup ? 'Create account' : 'Sign in'}</button>
-        <p className="auth-switch">{isSignup ? 'Already account irukka?' : 'Account illaya?'} <button type="button" onClick={() => { setIsSignup(value => !value); setError(''); }}> {isSignup ? 'Sign in' : 'Create account'}</button></p>
+        <p className="auth-switch">{isSignup ? 'Already have an account?' : 'New to Study Master?'} <button type="button" onClick={() => { setIsSignup(value => !value); setError(''); }}> {isSignup ? 'Sign in' : 'Create account'}</button></p>
       </form></>}
       {!configured && <button className="auth-submit guest-submit" onClick={onGuest}>Continue as guest</button>}
-      <p className="auth-note">Sign-in details Firebase moolama secure-aa verify aagum.</p>
+      <p className="auth-note">Your sign-in details are securely verified by Firebase.</p>
     </section>
   </main>;
 }
