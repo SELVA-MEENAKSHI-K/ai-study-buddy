@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { BookOpen, Bot, Check, ChevronDown, CircleHelp, Clock3, Code2, FileText, GraduationCap, History, Lightbulb, LoaderCircle, MessageCircle, Plus, RotateCcw, Send, Sparkles, WandSparkles, X, Menu, Trash2, ClipboardList, Settings } from 'lucide-react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { BookOpen, Bot, Check, ChevronDown, CircleHelp, Clock3, Code2, FileText, GraduationCap, History, Lightbulb, LoaderCircle, MessageCircle, Plus, RotateCcw, Send, Sparkles, WandSparkles, X, Menu, Trash2, ClipboardList, Settings, UserRound } from 'lucide-react';
+import { onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
 import AuthScreen from './AuthScreen.jsx';
+import ProfilePage from './ProfilePage.jsx';
 import { firebaseAuth, firebaseConfigured } from './firebase.js';
 
 const modes = [
@@ -90,7 +91,7 @@ function inlineMarkdown(value) {
   return value.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, i) => part.startsWith('`') ? <code key={i}>{part.slice(1, -1)}</code> : part.startsWith('**') ? <strong key={i}>{part.slice(2, -2)}</strong> : part);
 }
 
-function StudyMasterApp({ user, storageKey, onSignOut, onSignIn }) {
+function StudyMasterApp({ user, storageKey, onSignOut, onSignIn, onSaveProfileName }) {
   const initial = useRef(loadSession(storageKey)).current;
   const [conversations, setConversations] = useState(initial.conversations);
   const [activeId, setActiveId] = useState(initial.activeId || initial.conversations[0]?.id);
@@ -155,14 +156,14 @@ function StudyMasterApp({ user, storageKey, onSignOut, onSignIn }) {
   return <div className="layout">
     <aside className={`sidebar ${mobileHistory ? 'sidebar-open' : ''}`}>
       <div className="brand"><span className="brand-mark"><Sparkles size={19}/></span><span>Study Master</span></div>
-      <div className="side-actions"><button className="new-chat" onClick={newChat}><Plus size={17}/> New chat</button><p className="nav-label">LEARN</p><button className={`nav-item ${view === 'chat' ? 'active' : ''}`} onClick={() => setView('chat')}><MessageCircle size={16}/> Study chat</button><button className={`nav-item ${view === 'quiz' ? 'active' : ''}`} onClick={() => { setView('quiz'); setMobileHistory(false); }}><ClipboardList size={16}/> Practice quiz</button><button className={`nav-item ${view === 'code' ? 'active' : ''}`} onClick={() => { setView('code'); setMobileHistory(false); }}><Code2 size={16}/> Explain my code</button><button className={`nav-item ${view === 'notes' ? 'active' : ''}`} onClick={() => { setView('notes'); setMobileHistory(false); }}><FileText size={16}/> Simplify notes</button><button className="history-toggle" onClick={() => setMobileHistory(value => !value)}><History size={16}/> Recent questions <ChevronDown size={14}/></button><p className="nav-label mode-nav-label">LEARNING MODES</p><div className="sidebar-modes">{modes.map(({id,name,icon:Icon})=><button key={id} className={`sidebar-mode ${mode===id?'selected':''}`} aria-pressed={mode===id} onClick={()=>{setMode(id);updateActive(item=>({...item,mode:id}));}}><Icon size={15}/><span>{name}</span>{mode===id&&<Check size={13} className="sidebar-mode-check"/>}</button>)}</div><button className={`nav-item settings-link ${view === 'settings' ? 'active' : ''}`} onClick={() => { setView('settings'); setMobileHistory(false); }}><Settings size={16}/> Settings</button></div>
+      <div className="side-actions"><button className="new-chat" onClick={newChat}><Plus size={17}/> New chat</button><p className="nav-label">LEARN</p><button className={`nav-item ${view === 'chat' ? 'active' : ''}`} onClick={() => setView('chat')}><MessageCircle size={16}/> Study chat</button><button className={`nav-item ${view === 'quiz' ? 'active' : ''}`} onClick={() => { setView('quiz'); setMobileHistory(false); }}><ClipboardList size={16}/> Practice quiz</button><button className={`nav-item ${view === 'code' ? 'active' : ''}`} onClick={() => { setView('code'); setMobileHistory(false); }}><Code2 size={16}/> Explain my code</button><button className={`nav-item ${view === 'notes' ? 'active' : ''}`} onClick={() => { setView('notes'); setMobileHistory(false); }}><FileText size={16}/> Simplify notes</button><button className="history-toggle" onClick={() => setMobileHistory(value => !value)}><History size={16}/> Recent questions <ChevronDown size={14}/></button><p className="nav-label mode-nav-label">LEARNING MODES</p><div className="sidebar-modes">{modes.map(({id,name,icon:Icon})=><button key={id} className={`sidebar-mode ${mode===id?'selected':''}`} aria-pressed={mode===id} onClick={()=>{setMode(id);updateActive(item=>({...item,mode:id}));}}><Icon size={15}/><span>{name}</span>{mode===id&&<Check size={13} className="sidebar-mode-check"/>}</button>)}</div>{user && <button className={`nav-item profile-nav ${view === 'profile' ? 'active' : ''}`} onClick={() => { setView('profile'); setMobileHistory(false); }}><UserRound size={16}/> My profile</button>}<button className={`nav-item settings-link ${view === 'settings' ? 'active' : ''}`} onClick={() => { setView('settings'); setMobileHistory(false); }}><Settings size={16}/> Settings</button></div>
       <div className="history-list"><p className="eyebrow">THIS SESSION</p>{conversations.filter(item => item.messages.length > 1).length ? conversations.filter(item => item.messages.length > 1).map(item => <button key={item.id} className={`history-item ${item.id === activeId ? 'history-active' : ''}`} onClick={() => openConversation(item)}><MessageCircle size={15}/><span>{item.title}</span></button>) : <div className="history-empty"><Clock3 size={16}/><span>Your recent questions will show up here.</span></div>}</div>
       <div className="history-actions"><button onClick={() => setConfirmClear(true)}><Trash2 size={14}/> Clear history</button></div>
       <div className="sidebar-foot"><div className="privacy-icon"><Check size={13}/></div><span>Your chats stay in this browser tab.</span></div>
       <button className="mobile-close" onClick={() => setMobileHistory(false)} aria-label="Close recent questions"><X/></button>
     </aside>
     <main className="main">
-      <header className="topbar"><button className="mobile-menu" onClick={() => setMobileHistory(true)} aria-label="Open navigation"><Menu size={19}/></button><div className="topbar-label">YOUR LEARNING SPACE</div>{user && <div className="account-pill" title={user.email || 'Signed in'}>{user.email || 'Signed in'}</div>}{user ? <button className="account-signout" onClick={onSignOut}>Sign out</button> : <button className="account-signin" onClick={onSignIn}>Sign in</button>}<button className="reset-button" onClick={newChat}><RotateCcw size={15}/><span>New chat</span></button></header>
+      <header className="topbar"><button className="mobile-menu" onClick={() => setMobileHistory(true)} aria-label="Open navigation"><Menu size={19}/></button><div className="topbar-label">YOUR LEARNING SPACE</div>{user && <button className="account-pill profile-trigger" title="Open your profile" onClick={() => setView('profile')}>{user.photoURL && <img src={user.photoURL} alt="" referrerPolicy="no-referrer"/>}<span>{user.displayName || user.email || 'My profile'}</span></button>}{user ? <button className="account-signout" onClick={onSignOut}>Sign out</button> : <button className="account-signin" onClick={onSignIn}>Sign in</button>}<button className="reset-button" onClick={newChat}><RotateCcw size={15}/><span>New chat</span></button></header>
       <section className="content">
         {view === 'chat' && <>
           {messages.length === 1 && <><div className="welcome"><div className="welcome-icon"><Sparkles size={22}/></div><p className="eyebrow">A FRIENDLY PLACE TO FIGURE IT OUT</p><h1>What would you like<br/>to <span>learn today?</span></h1><p className="welcome-copy">Your personal AI study companion for understanding concepts, practising skills, and preparing for exams.</p></div>
@@ -176,6 +177,7 @@ function StudyMasterApp({ user, storageKey, onSignOut, onSignIn }) {
         {view === 'code' && <section className="tool-panel"><div className="tool-heading"><span className="tool-icon"><Code2 size={20}/></span><p className="eyebrow">CODE EXPLAINER</p><h1>Let’s make your <span>code click.</span></h1><p>Paste a snippet and ask a question. The AI will explain it; it won’t claim to run it.</p></div><form className="tool-form" onSubmit={event=>{event.preventDefault();runTool('code');}}><label htmlFor="code-input">Your code or question</label><textarea id="code-input" rows="9" maxLength={4000} value={code} onChange={event=>setCode(event.target.value)} placeholder={'Paste code here…\n\n# Optional: what is confusing you?'} /><button className="primary-button" disabled={!code.trim()||busy}>{busy?'Explaining…':'Explain my code'} <Send size={15}/></button></form></section>}
         {view === 'notes' && <section className="tool-panel"><div className="tool-heading"><span className="tool-icon orange"><FileText size={20}/></span><p className="eyebrow">NOTES SIMPLIFIER</p><h1>Make revision <span>easier.</span></h1><p>Paste your notes to get a simpler summary, key points, and definitions grounded in what you shared.</p></div><form className="tool-form" onSubmit={event=>{event.preventDefault();runTool('notes');}}><label htmlFor="notes-input">Your study notes (up to 4,000 characters)</label><textarea id="notes-input" rows="9" maxLength={4000} value={notes} onChange={event=>setNotes(event.target.value)} placeholder="Paste a section of your notes here…"/><button className="primary-button" disabled={!notes.trim()||busy}>{busy?'Simplifying…':'Simplify my notes'} <Send size={15}/></button></form></section>}
         {view === 'settings' && <section className="tool-panel settings-panel"><div className="tool-heading"><span className="tool-icon orange"><Settings size={20}/></span><p className="eyebrow">YOUR PREFERENCES</p><h1>Make Study Master <span>yours.</span></h1><p>Choose the learning style for this conversation and manage your browser-session history.</p></div><section className="settings-card"><h2>Learning style</h2><p>This changes the guidance for your next AI answer.</p><div className="settings-mode-list">{modes.map(({id,name,note,icon:Icon})=><button key={id} className={`settings-mode ${mode===id?'selected':''}`} aria-pressed={mode===id} onClick={()=>{setMode(id);updateActive(item=>({...item,mode:id}));}}><Icon size={18}/><span><strong>{name}</strong><small>{note}</small></span>{mode===id&&<Check size={16}/>}</button>)}</div></section><section className="settings-card privacy-card"><h2>Session history</h2><p>Your conversations are stored in this browser tab only. They are not permanent or synced across devices.</p><button className="secondary-button" onClick={()=>setConfirmClear(true)}><Trash2 size={15}/> Clear session history</button></section></section>}
+        {view === 'profile' && user && <ProfilePage user={user} onBack={() => setView('chat')} onSignOut={onSignOut} onSaveName={onSaveProfileName}/>}
         <footer className="disclaimer"><BookOpen size={13}/> A learning companion. Double-check important information.</footer>
       </section>
     </main>
@@ -185,6 +187,7 @@ function StudyMasterApp({ user, storageKey, onSignOut, onSignIn }) {
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [, refreshProfile] = useState(0);
   const [loading, setLoading] = useState(firebaseConfigured);
   const [guest, setGuest] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -202,5 +205,10 @@ export default function App() {
   if (firebaseConfigured && !user && !guest) return <AuthScreen auth={firebaseAuth} configured onGuest={() => setGuest(true)}/>;
   if (!firebaseConfigured && authOpen) return <AuthScreen configured={false} onGuest={() => setAuthOpen(false)}/>;
   const storageKey = user ? `study-master-session-${user.uid}` : 'studybuddy-session';
-  return <StudyMasterApp key={user?.uid || 'guest'} user={user} storageKey={storageKey} onSignOut={() => signOut(firebaseAuth)} onSignIn={() => setAuthOpen(true)}/>;
+  async function saveProfileName(name) {
+    if (!firebaseAuth?.currentUser) throw new Error('No signed-in account');
+    await updateProfile(firebaseAuth.currentUser, { displayName: name });
+    refreshProfile(value => value + 1);
+  }
+  return <StudyMasterApp key={user?.uid || 'guest'} user={user} storageKey={storageKey} onSignOut={() => signOut(firebaseAuth)} onSignIn={() => setAuthOpen(true)} onSaveProfileName={saveProfileName}/>;
 }

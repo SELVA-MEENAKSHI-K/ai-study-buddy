@@ -80,6 +80,38 @@ button:disabled { cursor: not-allowed; }
 .auth-submit { transition: transform var(--motion-fast) var(--motion-smooth), box-shadow var(--motion-fast) ease, background-color var(--motion-fast) ease; }
 .auth-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 18px rgb(37 99 235 / 24%); }
 
+.profile-trigger { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.profile-trigger:hover { border-color: #93c5fd; color: var(--blue); }
+.profile-trigger img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+.profile-trigger span { overflow: hidden; text-overflow: ellipsis; }
+.profile-card { margin-top: 24px; padding: 22px; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 28px rgb(23 32 51 / 5%); }
+.profile-back { display: inline-flex; align-items: center; gap: 7px; border: 0; padding: 5px 0; color: var(--blue); background: transparent; font-size: 11px; font-weight: 700; }
+.profile-identity { display: flex; align-items: center; gap: 16px; margin: 22px 0 20px; }
+.profile-avatar { flex: none; width: 66px; height: 66px; border-radius: 21px; object-fit: cover; }
+.profile-avatar-fallback { display: grid; place-items: center; color: #fff; background: linear-gradient(145deg, var(--blue), var(--deep)); font: 800 24px Manrope, sans-serif; }
+.profile-identity .eyebrow { color: var(--orange); margin: 0 0 5px; }
+.profile-identity h2 { margin: 0; color: var(--ink); font: 800 20px Manrope, sans-serif; letter-spacing: -.4px; }
+.profile-identity p:last-child { margin: 5px 0 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.profile-form { padding: 17px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.profile-form label { display: block; margin-bottom: 7px; color: #334155; font-size: 11px; font-weight: 700; }
+.profile-name-row { display: flex; gap: 9px; }
+.profile-name-row input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 9px; padding: 10px 11px; color: var(--ink); font-size: 12px; }
+.profile-name-row input:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 3px var(--light-blue); }
+.profile-name-row .primary-button { flex: none; width: auto; }
+.profile-notice,.profile-error { display: flex; align-items: center; gap: 6px; margin: 9px 0 0; font-size: 11px; }
+.profile-notice { color: #15803d; }.profile-error { color: #b91c1c; }
+.profile-guest-note { padding: 12px; border-radius: 9px; background: var(--light-blue); color: var(--deep); font-size: 12px; line-height: 1.55; }
+.profile-details { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; padding: 19px 0; }
+.profile-detail { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 12px; border: 1px solid #edf1f6; border-radius: 11px; background: #fbfdff; }
+.profile-detail > span { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--light-blue); color: var(--blue); }
+.profile-detail:nth-child(2n) > span { background: var(--soft-orange); color: var(--orange); }
+.profile-detail small,.profile-detail strong { display: block; }
+.profile-detail small { margin-bottom: 3px; color: var(--muted); font-size: 9px; }
+.profile-detail strong { overflow-wrap: anywhere; color: var(--ink); font-size: 11px; }
+.profile-signout { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; border: 1px solid #fecaca; border-radius: 9px; padding: 10px; background: #fff; color: #b91c1c; font-size: 11px; font-weight: 700; }
+.profile-signout:hover { background: #fef2f2; }
+@media (max-width: 650px) { .profile-card { padding: 16px; }.profile-details { grid-template-columns: 1fr; }.profile-name-row { flex-direction: column; }.profile-name-row .primary-button { width: 100%; } }
+
 @keyframes app-arrive { from { opacity: 0; } to { opacity: 1; } }
 @keyframes content-arrive { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes auth-arrive { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
