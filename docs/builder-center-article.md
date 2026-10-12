@@ -26,7 +26,7 @@ The main implementation challenge was making the same student workflow operate t
 
 React/Vite sends requests to FastAPI. FastAPI calls a Strands agent, which invokes Nova Lite through Amazon Bedrock or, for a local demo, the Ollama service. AWS IAM provides the scoped role and OIDC trust used by the deployed Bedrock path. Vercel hosts the existing web deployment; Vercel is the hosting provider, not an AWS service. The reusable agent tool is a curated learning-resource finder for selected computer-science topics.
 
-The deployed Study Master app can be viewed at [Study Master](https://ai-study-buddy-92gax3enh-selvameenakshik-1506s-projects.vercel.app/). The source is in the public [GitHub repository](https://github.com/SELVA-MEENAKSHI-K/study-master).
+The deployed Study Master app can be viewed at [Study Master](https://ai-study-buddy-lovat-delta.vercel.app/). The source is in the public [GitHub repository](https://github.com/SELVA-MEENAKSHI-K/ai-study-buddy).
 
 I learned to keep model credentials on the backend, use short-lived OIDC role credentials for a deployed Bedrock call, and treat agent features as complete only when both the user action and API path work. I also learned that mock tests can verify interaction behavior without proving model quality; live model review and student feedback remain separate evaluation steps.
 

@@ -2,7 +2,7 @@
 
 A responsive learning companion for college students studying programming and computer science. The React client talks to a FastAPI backend; the backend creates a Strands Agents SDK agent using Amazon Bedrock. Model credentials stay on the server and are read from the standard AWS credential chain (local AWS profile, environment, or IAM role).
 
-**Live demo:** [Open Study Master on Vercel](https://ai-study-buddy-92gax3enh-selvameenakshik-1506s-projects.vercel.app/).
+**Live demo:** [Open Study Master on Vercel](https://ai-study-buddy-lovat-delta.vercel.app/).
 
 ## Features
 
@@ -54,7 +54,7 @@ For the prepared local Ollama demo on Windows, first open the Ollama app from St
 
 ## Deploy the full app on Vercel
 
-The repository root contains the Vercel configuration. Import `SELVA-MEENAKSHI-K/study-master` from GitHub in Vercel and keep the project root set to the repository root. Vercel builds the React app and runs the FastAPI backend as a Python Function; FastAPI serves the built frontend from the same deployment.
+The repository root contains the Vercel configuration. Import `SELVA-MEENAKSHI-K/ai-study-buddy` from GitHub in Vercel and keep the project root set to the repository root. Vercel builds the React app and runs the FastAPI backend as a Python Function; FastAPI serves the built frontend from the same deployment.
 
 For live AI answers, set `AI_PROVIDER=bedrock`, `AWS_REGION=us-east-1`, and `BEDROCK_MODEL_ID=us.amazon.nova-lite-v1:0` in the Vercel project's Environment Variables, and configure AWS credentials securely for the backend. Never add AWS credentials to GitHub or the frontend. Bedrock model calls are billed by usage. The Vercel Hobby hosting plan is free within its personal-project limits, but it does not make Bedrock inference free. Ollama is local to your computer and cannot provide AI answers to the deployed site.
 
