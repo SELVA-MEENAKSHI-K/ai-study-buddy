@@ -26,7 +26,9 @@ export default function App() {
   const endRef = useRef(null);
 
   useEffect(() => { sessionStorage.setItem('studybuddy-session', JSON.stringify({ mode, messages, history })); }, [mode, messages, history]);
-  useEffect(() => endRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'end' }), [messages, busy, error]);
+  useEffect(() => {
+    endRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'end' });
+  }, [messages, busy, error]);
 
   async function requestAnswer(question, anotherWay = false) {
     if (!question.trim() || busy) return;
