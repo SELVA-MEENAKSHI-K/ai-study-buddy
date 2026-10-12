@@ -1,9 +1,11 @@
 import asyncio
 import logging
+from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .agent import answer
@@ -51,3 +53,8 @@ async def chat(request: ChatRequest):
     if not response:
         raise HTTPException(status_code=503, detail="The AI service returned an empty response. Please retry.")
     return {"answer": response}
+
+
+frontend_dist = Path(__file__).resolve().parents[1] / "frontend" / "dist"
+if frontend_dist.is_dir():
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
