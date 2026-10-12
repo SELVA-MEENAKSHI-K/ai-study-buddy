@@ -35,7 +35,7 @@ For the prepared local Ollama demo on Windows, first open the Ollama app from St
    uvicorn backend.app:app --reload --app-dir ..
    ```
 
-   If using a `.env` file, export its values in your shell first; the application intentionally does not load `.env` files implicitly. For example, set `AWS_REGION` and `BEDROCK_MODEL_ID` as environment variables. AWS credentials should be configured outside the app.
+   The backend loads non-secret model settings from `backend/.env` at startup. AWS credentials should be configured outside the app using the standard AWS credential chain; do not put them in `.env` or commit them.
 3. In another terminal:
 
    ```powershell
