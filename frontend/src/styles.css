@@ -150,3 +150,37 @@ button:focus-visible, textarea:focus-visible, input:focus-visible { outline-colo
   .settings-mode-list { grid-template-columns: 1fr; }
   .response-actions { padding: 8px; }
 }
+
+.study-chart {
+  margin: 14px 0 5px;
+  padding: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--white);
+  box-shadow: 0 6px 20px var(--soft-shadow);
+}
+.study-chart figcaption { display: grid; gap: 5px; }
+.study-chart figcaption strong { color: var(--deep); font: 700 14px Manrope, sans-serif; }
+.study-chart figcaption > span { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.study-chart-visual { width: 100%; overflow-x: auto; }
+.study-chart-visual > svg { display: block; width: 100%; min-width: 400px; height: auto; margin-top: 8px; }
+.study-chart-visual.pie-chart-visual { display: flex; align-items: center; gap: 18px; }
+.study-chart-visual.pie-chart-visual > svg { width: min(42%, 240px); min-width: 180px; flex: none; }
+.chart-gridline { stroke: var(--line); stroke-width: 1; }
+.chart-axis-label, .chart-value-label { fill: var(--muted); font: 10px Inter, sans-serif; }
+.chart-value-label { fill: var(--ink); font-weight: 700; }
+.chart-legend { display: grid; gap: 9px; width: 100%; margin: 0; padding: 0; list-style: none; }
+.chart-legend li { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto; align-items: center; gap: 8px; color: var(--ink); font-size: 10px; }
+.chart-legend li > span:first-child { width: 9px; height: 9px; border-radius: 3px; }
+.chart-legend li strong { color: var(--deep); font-weight: 700; }
+.chart-data { margin-top: 6px; color: var(--blue); font-size: 10px; }
+.chart-data summary { width: fit-content; cursor: pointer; }
+.chart-data table { width: 100%; margin-top: 8px; border-collapse: collapse; color: var(--ink); text-align: left; }
+.chart-data th, .chart-data td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.chart-data td { text-align: right; }
+@media (max-width: 520px) {
+  .study-chart { padding: 12px 8px; }
+  .study-chart-visual.pie-chart-visual { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .study-chart-visual.pie-chart-visual > svg { width: 190px; }
+}

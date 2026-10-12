@@ -13,6 +13,15 @@ describe('Study Master chat', () => {
     expect(await screen.findByText('A function calling itself.')).toBeInTheDocument();
   });
   it('does not send empty input', () => { render(<App/>); fireEvent.click(screen.getByRole('button', { name: 'Send question' })); expect(fetch).not.toHaveBeenCalled(); });
+  it('renders an AI chart as an accessible visual and keeps a data table available', async () => {
+    const chart = { type: 'bar', title: 'Weekly questions', labels: ['Monday', 'Tuesday'], values: [2, 4], unit: 'questions', note: 'Illustrative example.' };
+    fetch.mockResolvedValue({ ok: true, json: async () => ({ answer: `Here is a quick comparison.\n\n\`\`\`study-chart\n${JSON.stringify(chart)}\n\`\`\`` }) });
+    render(<App/>); fireEvent.change(screen.getByLabelText('Ask a study question'), { target: { value: 'Compare Monday and Tuesday' } }); fireEvent.click(screen.getByRole('button', { name: 'Send question' }));
+    expect(await screen.findByRole('img', { name: 'bar chart: Monday, 2 questions; Tuesday, 4 questions' })).toBeInTheDocument();
+    expect(screen.getByText('Weekly questions')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('View chart data'));
+    expect(screen.getByRole('table')).toBeInTheDocument();
+  });
   it('sends the selected learning mode', async () => { fetch.mockResolvedValue(ok('Exam notes response')); render(<App/>); fireEvent.click(screen.getByRole('button', { name: /Exam prep Definitions and key points/ })); fireEvent.change(screen.getByLabelText('Ask a study question'), { target: { value: 'Define a stack' } }); fireEvent.click(screen.getByRole('button', { name: 'Send question' })); await screen.findByText('Exam notes response'); expect(JSON.parse(fetch.mock.calls[0][1].body).mode).toBe('exam'); });
   it('requests a simpler explanation using the original question without retyping', async () => { fetch.mockResolvedValueOnce(ok('First explanation')).mockResolvedValueOnce(ok('Simple version')); render(<App/>); fireEvent.change(screen.getByLabelText('Ask a study question'), { target: { value: 'Explain recursion' } }); fireEvent.click(screen.getByRole('button', { name: 'Send question' })); await screen.findByText('First explanation'); fireEvent.click(screen.getByRole('button', { name: /Explain simply/ })); await screen.findByText('Simple version'); expect(JSON.parse(fetch.mock.calls[1][1].body)).toMatchObject({ question: 'Explain recursion', action: 'explain_simple' }); });
   it('offers retry on recoverable failures', async () => { fetch.mockResolvedValueOnce({ ok: false, json: async () => ({ detail: 'AI is unavailable' }) }).mockResolvedValueOnce(ok('Recovered')); render(<App/>); fireEvent.change(screen.getByLabelText('Ask a study question'), { target: { value: 'Explain SQL' } }); fireEvent.click(screen.getByRole('button', { name: 'Send question' })); expect(await screen.findByText('AI is unavailable')).toBeInTheDocument(); fireEvent.click(screen.getByRole('button', { name: /Try again/ })); expect(await screen.findByText('Recovered')).toBeInTheDocument(); });

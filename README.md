@@ -9,6 +9,7 @@ A responsive learning companion for college students studying programming and co
 - Friendly concept explanations with Beginner, Exam prep, and Practical response modes.
 - Multiple session conversations with reopen, New Chat, and confirmed Clear History actions. Data stays in this browser tab and is not permanent storage.
 - **Explain it another way** actions: Explain Simply, Real-World Example, and Exam Answer, plus contextual follow-ups.
+- AI-generated bar, line, and pie charts when they help explain supplied or clearly illustrative data, with an accessible data table.
 - AI-generated multiple-choice practice quiz with answer explanations and a five-question score.
 - AI code explainer and notes simplifier, both with explicit input limits and prompts that avoid claiming code was executed or adding unsupported notes.
 - Safe, limited Markdown rendering for headings, lists, inline code, and fenced code blocks.

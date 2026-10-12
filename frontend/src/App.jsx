@@ -17,11 +17,61 @@ function freshConversation() { return { id: `${Date.now()}-${Math.random().toStr
 function loadSession() {
   try { const saved = JSON.parse(sessionStorage.getItem('studybuddy-session') || '{}'); return saved.conversations?.length ? saved : { conversations: [freshConversation()], activeId: null }; } catch { return { conversations: [freshConversation()], activeId: null }; }
 }
+function StudyChart({ data }) {
+  const valid = data && ['bar', 'line', 'pie'].includes(data.type)
+    && typeof data.title === 'string' && data.title.length <= 100
+    && Array.isArray(data.labels) && data.labels.length >= 2 && data.labels.length <= 6
+    && data.labels.every(label => typeof label === 'string' && label.length <= 32)
+    && Array.isArray(data.values) && data.values.length === data.labels.length
+    && data.values.every(value => typeof value === 'number' && Number.isFinite(value) && value >= 0)
+    && (data.type !== 'pie' || data.values.some(value => value > 0));
+  if (!valid) return null;
+
+  const colors = ['#2563EB', '#F97316', '#1E3A8A', '#60A5FA', '#FB923C', '#93C5FD'];
+  const unit = typeof data.unit === 'string' && data.unit.length <= 16 ? data.unit : '';
+  const note = typeof data.note === 'string' && data.note.length <= 180 ? data.note : '';
+  const max = Math.max(...data.values, 1);
+  const left = 48; const right = 12; const top = 18; const baseline = 218; const plotHeight = 174; const width = 640;
+  const xAt = index => left + ((width - left - right) * (index + 0.5)) / data.values.length;
+  const yAt = value => baseline - (value / max) * plotHeight;
+  const formatValue = value => `${Number.isInteger(value) ? value : Number(value.toFixed(2))}${unit ? ` ${unit}` : ''}`;
+
+  let pieAngle = -Math.PI / 2;
+  const slices = data.values.map((value, index) => {
+    const nextAngle = pieAngle + (value / data.values.reduce((sum, item) => sum + item, 0)) * Math.PI * 2;
+    const radius = 88; const cx = 150; const cy = 112;
+    const startX = cx + Math.cos(pieAngle) * radius; const startY = cy + Math.sin(pieAngle) * radius;
+    const endX = cx + Math.cos(nextAngle) * radius; const endY = cy + Math.sin(nextAngle) * radius;
+    const largeArc = nextAngle - pieAngle > Math.PI ? 1 : 0;
+    const path = `M ${cx} ${cy} L ${startX} ${startY} A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY} Z`;
+    const slice = <path key={index} d={path} fill={colors[index]}><title>{data.labels[index]}: {formatValue(value)}</title></path>;
+    pieAngle = nextAngle;
+    return slice;
+  });
+
+  return <figure className="study-chart" aria-label={`Chart: ${data.title}`}>
+    <figcaption><strong>{data.title}</strong>{note && <span>{note}</span>}</figcaption>
+    <div className={`study-chart-visual ${data.type === 'pie' ? 'pie-chart-visual' : ''}`}>
+      <svg viewBox={data.type === 'pie' ? '0 0 320 224' : `0 0 ${width} 276`} role="img" aria-label={`${data.type} chart: ${data.labels.map((label, index) => `${label}, ${formatValue(data.values[index])}`).join('; ')}`}>
+        {data.type === 'pie' ? <g>{slices}</g> : <>
+          {[0, 0.5, 1].map((fraction, index) => { const y = baseline - plotHeight * fraction; return <g key={index}><line x1={left} x2={width - right} y1={y} y2={y} className="chart-gridline"/><text x={left - 8} y={y + 4} textAnchor="end" className="chart-axis-label">{formatValue(max * fraction)}</text></g>; })}
+          {data.type === 'bar' && data.values.map((value, index) => { const slot = (width - left - right) / data.values.length; const barWidth = Math.min(46, slot * 0.58); const height = (value / max) * plotHeight; return <g key={index}><rect x={xAt(index) - barWidth / 2} y={baseline - height} width={barWidth} height={height} rx="5" fill={colors[index]}/><text x={xAt(index)} y={baseline - height - 8} textAnchor="middle" className="chart-value-label">{formatValue(value)}</text><text x={xAt(index)} y={baseline + 19} textAnchor="middle" className="chart-axis-label">{data.labels[index]}</text></g>; })}
+          {data.type === 'line' && <><polyline points={data.values.map((value, index) => `${xAt(index)},${yAt(value)}`).join(' ')} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>{data.values.map((value, index) => <g key={index}><circle cx={xAt(index)} cy={yAt(value)} r="5" fill="#F97316"/><title>{data.labels[index]}: {formatValue(value)}</title><text x={xAt(index)} y={yAt(value) - 11} textAnchor="middle" className="chart-value-label">{formatValue(value)}</text><text x={xAt(index)} y={baseline + 19} textAnchor="middle" className="chart-axis-label">{data.labels[index]}</text></g>)}</>}
+        </>}
+      </svg>
+      {data.type === 'pie' && <ul className="chart-legend">{data.labels.map((label, index) => <li key={label}><span style={{ backgroundColor: colors[index] }}/><span>{label}</span><strong>{formatValue(data.values[index])}</strong></li>)}</ul>}
+    </div>
+    <details className="chart-data"><summary>View chart data</summary><table><thead><tr><th scope="col">Category</th><th scope="col">Value</th></tr></thead><tbody>{data.labels.map((label, index) => <tr key={label}><th scope="row">{label}</th><td>{formatValue(data.values[index])}</td></tr>)}</tbody></table></details>
+  </figure>;
+}
+
 function Markdown({ text }) {
   const lines = String(text || '').split('\n');
-  const blocks = []; let codeLines = null;
+  const blocks = []; let codeLines = null; let chartLines = null;
   lines.forEach((line, i) => {
     const trimmed = line.trim();
+    if (chartLines) { if (trimmed.startsWith('```')) { try { blocks.push(<StudyChart key={`chart-${i}`} data={JSON.parse(chartLines.join('\n'))}/>); } catch { /* Invalid chart data is safely omitted. */ } chartLines = null; } else chartLines.push(line); return; }
+    if (trimmed.toLowerCase() === '```study-chart') { chartLines = []; return; }
     if (trimmed.startsWith('```')) { if (codeLines) { blocks.push(<pre className="code-block" key={`code-${i}`}><code>{codeLines.join('\n')}</code></pre>); codeLines = null; } else codeLines = []; return; }
     if (codeLines) { codeLines.push(line); return; }
     if (/^#{1,3}\s/.test(trimmed)) blocks.push(<strong className="md-heading" key={i}>{trimmed.replace(/^#{1,3}\s/, '')}</strong>);

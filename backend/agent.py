@@ -32,6 +32,10 @@ def _text(result) -> str:
     return value.strip()
 
 
+def _history_text(content: str) -> str:
+    return re.sub(r"```study-chart\s*\n.*?\n```", "", content, flags=re.IGNORECASE | re.DOTALL).strip()
+
+
 def answer(
     question: str,
     mode: str,
@@ -40,7 +44,7 @@ def answer(
     vercel_oidc_token: str | None = None,
     action: str = "chat",
 ) -> str:
-    transcript = "\n".join(f"{item['role'].capitalize()}: {item['content']}" for item in history[-settings.max_history_messages:])
+    transcript = "\n".join(f"{item['role'].capitalize()}: {_history_text(item['content'])}" for item in history[-settings.max_history_messages:])
     mode_text = MODE_GUIDANCE[mode]
     if alternate:
         mode_text += " The student wants the previous explanation another way: give a simpler version, then one practical example and one real-world analogy. Do not ask them to repeat the original question."
