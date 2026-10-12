@@ -47,6 +47,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [retryRequest, setRetryRequest] = useState(null);
   const [mobileHistory, setMobileHistory] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [quizTopic, setQuizTopic] = useState('');
@@ -66,14 +67,16 @@ export default function App() {
   useEffect(() => { endRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'end' }); }, [messages, busy, error]);
   function updateActive(transform) { setConversations(current => current.map(item => { if (item.id !== activeId) return item; const updated = transform(item); return { ...updated, messages: updated.messages.slice(-80) }; })); }
   function addMessage(message) { updateActive(item => ({ ...item, title: item.messages.length === 1 && message.role === 'user' ? message.content.slice(0, 52) : item.title, messages: [...item.messages, message], updatedAt: Date.now() })); }
-  async function requestAnswer(question, action = 'chat') {
+  async function requestAnswer(question, action = 'chat', requestMode = mode) {
     if (!question.trim() || busy) return;
-    setError(''); setBusy(true);
+    setError(''); setRetryRequest({ question, action, mode: requestMode }); setBusy(true);
     try {
-      const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, mode, history: messages.slice(-12), action }) });
+      const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, mode: requestMode, history: messages.slice(-12), action }) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.detail || 'I couldn’t reach the study buddy. Please try again.');
+      if (typeof data.answer !== 'string' || !data.answer.trim()) throw new Error('The study buddy sent an unreadable response. Your question is still here. Please try again.');
       addMessage({ role: 'assistant', content: data.answer, action });
+      setRetryRequest(null);
     } catch (err) {
       setError(err.name === 'TypeError' ? 'I can’t reach the study buddy right now. Check that the app is running, then retry.' : err.message);
     } finally { setBusy(false); }
@@ -82,15 +85,15 @@ export default function App() {
     const q = question.trim(); if (!q || busy) return;
     addMessage({ role: 'user', content: q }); setInput(''); setView('chat'); requestAnswer(q, action);
   }
-  function retry() { if (lastUser) requestAnswer(lastUser); }
-  function newChat() { const chat = freshConversation(); setConversations(current => [chat, ...current].slice(0, 10)); setActiveId(chat.id); setMode(chat.mode); setView('chat'); setError(''); setMobileHistory(false); }
-  function openConversation(item) { setActiveId(item.id); setMode(item.mode || 'beginner'); setView('chat'); setError(''); setMobileHistory(false); }
-  function clearHistory() { const chat = freshConversation(); setConversations([chat]); setActiveId(chat.id); setMode(chat.mode); setConfirmClear(false); setView('chat'); }
+  function retry() { if (retryRequest) requestAnswer(retryRequest.question, retryRequest.action, retryRequest.mode); else if (lastUser) requestAnswer(lastUser); }
+  function newChat() { const chat = freshConversation(); setConversations(current => [chat, ...current].slice(0, 10)); setActiveId(chat.id); setMode(chat.mode); setView('chat'); setError(''); setRetryRequest(null); setMobileHistory(false); }
+  function openConversation(item) { setActiveId(item.id); setMode(item.mode || 'beginner'); setView('chat'); setError(''); setRetryRequest(null); setMobileHistory(false); }
+  function clearHistory() { const chat = freshConversation(); setConversations([chat]); setActiveId(chat.id); setMode(chat.mode); setConfirmClear(false); setView('chat'); setError(''); setRetryRequest(null); }
   async function runQuiz(next = false) {
     const topic = quizTopic.trim(); if (!topic || busy) return;
     if (!next) { setQuizScore(0); setQuizCount(1); setQuizFinished(false); }
     setBusy(true); setError(''); setQuiz(null); setQuizResult(null); setQuizChoice(null);
-    try { const response = await fetch('/api/quiz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, mode }) }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.detail || 'The quiz could not be generated. Please retry.'); setQuiz(data); }
+    try { const response = await fetch('/api/quiz', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic, mode }) }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.detail || 'The quiz could not be generated. Please retry.'); if (typeof data.topic !== 'string' || typeof data.question !== 'string' || !data.question.trim() || !Array.isArray(data.options) || data.options.length !== 4 || !data.options.every(option => typeof option === 'string' && option.trim()) || !Number.isInteger(data.correct_index) || data.correct_index < 0 || data.correct_index > 3 || typeof data.explanation !== 'string' || !data.explanation.trim()) throw new Error('The quiz came back in an unreadable format. Your topic is still here. Please try again.'); setQuiz(data); }
     catch (err) { setError(err.name === 'TypeError' ? 'I can’t reach the study buddy right now. Check that the app is running, then retry.' : err.message); }
     finally { setBusy(false); }
   }
