@@ -1,0 +1,112 @@
+/* Shared motion and interaction polish for every Study Master screen. */
+:root {
+  --motion-fast: 160ms;
+  --motion-smooth: cubic-bezier(.2, .75, .25, 1);
+  --surface-shadow: 0 14px 36px rgb(23 32 51 / 7%);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background-image: radial-gradient(ellipse at 88% 4%, rgb(37 99 235 / 4%), transparent 30rem),
+    radial-gradient(ellipse at 16% 94%, rgb(249 115 22 / 3%), transparent 25rem);
+}
+
+.layout { animation: app-arrive 520ms var(--motion-smooth) both; }
+.sidebar { box-shadow: 8px 0 30px rgb(23 32 51 / 2%); }
+.brand-mark { transition: transform 220ms var(--motion-smooth), box-shadow 220ms ease; }
+.brand:hover .brand-mark { transform: rotate(-7deg) scale(1.06); box-shadow: 0 8px 20px rgb(37 99 235 / 30%); }
+.topbar { position: sticky; top: 0; z-index: 3; backdrop-filter: blur(16px); }
+.topbar-label { transition: color var(--motion-fast) ease; }
+.content { animation: content-arrive 420ms 60ms var(--motion-smooth) both; }
+
+.welcome-icon { box-shadow: 0 8px 22px rgb(37 99 235 / 10%); animation: icon-arrive 580ms 120ms var(--motion-smooth) both; }
+.starter-card, .mode-card, .settings-mode, .sidebar-mode, .history-item,
+.nav-item, .history-toggle, .response-actions button, .followups button,
+.quiz-options button, .secondary-button, .primary-button, .new-chat,
+.reset-button, .composer, .tool-form, .quiz-card, .settings-card,
+.study-chart, .message-content {
+  transition: transform var(--motion-fast) var(--motion-smooth),
+    box-shadow var(--motion-fast) ease, border-color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease, color var(--motion-fast) ease;
+}
+.starter-card { animation: card-arrive 420ms var(--motion-smooth) both; }
+.starter-card:nth-child(2) { animation-delay: 45ms; }
+.starter-card:nth-child(3) { animation-delay: 90ms; }
+.starter-card:nth-child(4) { animation-delay: 135ms; }
+.starter-card:hover, .tool-form:hover, .quiz-card:hover, .settings-card:hover,
+.study-chart:hover { transform: translateY(-2px); box-shadow: var(--surface-shadow); }
+.mode-card:hover, .settings-mode:hover, .sidebar-mode:hover,
+.history-item:hover, .nav-item:hover, .history-toggle:hover,
+.response-actions button:hover:not(:disabled), .followups button:hover,
+.quiz-options button:hover:not(:disabled), .reset-button:hover,
+.new-chat:hover, .primary-button:hover:not(:disabled), .secondary-button:hover {
+  transform: translateY(-1px);
+}
+.new-chat:hover, .primary-button:hover:not(:disabled) { box-shadow: 0 7px 16px rgb(37 99 235 / 22%); }
+button:active:not(:disabled) { transform: translateY(0) scale(.98); }
+button:disabled { cursor: not-allowed; }
+
+.message { animation: message-arrive 360ms var(--motion-smooth) both; }
+.message.user .message-content { box-shadow: 0 5px 14px rgb(37 99 235 / 12%); }
+.message.assistant .message-content { box-shadow: 0 5px 16px rgb(23 32 51 / 3%); }
+.response-actions-title svg { animation: wand-wiggle 2.8s ease-in-out infinite; }
+.composer:focus-within { border-color: #93c5fd; box-shadow: 0 0 0 4px rgb(37 99 235 / 8%), 0 12px 30px rgb(23 32 51 / 6%); }
+.composer-bottom button { transition: transform var(--motion-fast) var(--motion-smooth), box-shadow var(--motion-fast) ease; }
+.composer-bottom button:hover:not(:disabled) { transform: translateY(-2px) rotate(-4deg); box-shadow: 0 6px 14px rgb(37 99 235 / 25%); }
+.loading-row { animation: fade-in 180ms ease both; }
+.loading-row .spin { animation: spin 900ms linear infinite; }
+.error-card { animation: card-arrive 250ms var(--motion-smooth) both; }
+
+.tool-panel { animation: content-arrive 450ms var(--motion-smooth) both; }
+.tool-icon { transition: transform 240ms var(--motion-smooth), box-shadow 240ms ease; }
+.tool-heading:hover .tool-icon { transform: translateY(-3px) rotate(-4deg); box-shadow: 0 9px 20px rgb(37 99 235 / 12%); }
+.tool-form input:focus, .tool-form textarea:focus { border-color: #60a5fa; box-shadow: 0 0 0 4px rgb(37 99 235 / 8%); outline: none; }
+.quiz-feedback { animation: card-arrive 260ms var(--motion-smooth) both; }
+.quiz-feedback.correct { border: 1px solid rgb(34 197 94 / 17%); }
+.quiz-feedback.incorrect { border: 1px solid rgb(249 115 22 / 20%); }
+.dialog-backdrop { animation: fade-in 160ms ease both; backdrop-filter: blur(4px); }
+.confirm-dialog { animation: dialog-arrive 220ms var(--motion-smooth) both; }
+
+.study-chart-visual rect { transform-box: fill-box; transform-origin: bottom; animation: chart-rise 620ms 140ms var(--motion-smooth) both; }
+.study-chart-visual circle { transform-box: fill-box; transform-origin: center; animation: dot-pop 380ms 260ms var(--motion-smooth) both; }
+.study-chart-visual polyline { stroke-dasharray: 900; stroke-dashoffset: 900; animation: chart-draw 900ms 120ms ease-out forwards; }
+.study-chart-visual path { animation: pie-arrive 650ms var(--motion-smooth) both; }
+
+.auth-card { animation: auth-arrive 560ms var(--motion-smooth) both; }
+.auth-brand > span { box-shadow: 0 7px 18px rgb(37 99 235 / 20%); transition: transform 220ms var(--motion-smooth); }
+.auth-brand:hover > span { transform: rotate(-8deg) scale(1.08); }
+.auth-input { transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease, transform var(--motion-fast) var(--motion-smooth); }
+.auth-input:focus-within { transform: translateY(-1px); }
+.auth-submit { transition: transform var(--motion-fast) var(--motion-smooth), box-shadow var(--motion-fast) ease, background-color var(--motion-fast) ease; }
+.auth-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 18px rgb(37 99 235 / 24%); }
+
+@keyframes app-arrive { from { opacity: 0; } to { opacity: 1; } }
+@keyframes content-arrive { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes auth-arrive { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes icon-arrive { from { opacity: 0; transform: translateY(7px) scale(.86); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes card-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes message-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dialog-arrive { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes wand-wiggle { 0%, 80%, 100% { transform: rotate(0); } 84% { transform: rotate(-12deg); } 90% { transform: rotate(10deg); } 95% { transform: rotate(-5deg); } }
+@keyframes chart-rise { from { transform: scaleY(.04); opacity: .35; } to { transform: scaleY(1); opacity: 1; } }
+@keyframes chart-draw { to { stroke-dashoffset: 0; } }
+@keyframes dot-pop { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes pie-arrive { from { opacity: .45; transform: scale(.92); } to { opacity: 1; transform: scale(1); } }
+
+@media (max-width: 650px) {
+  .topbar { position: sticky; }
+  .sidebar { box-shadow: 16px 0 48px rgb(23 32 51 / 14%); }
+  .starter-card:hover, .tool-form:hover, .quiz-card:hover, .settings-card:hover,
+  .study-chart:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
