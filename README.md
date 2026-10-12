@@ -16,6 +16,7 @@ A responsive learning companion for college students studying programming and co
 - A curated resource-finder tool with known links for Python, JavaScript, web development, computer science, algorithms, Git, Java, and SQL.
 - Request validation, bounded input/history, per-process request throttling, model timeout, non-sensitive error messages, and retry UI.
 - Responsive layout, keyboard send (`Enter`; `Shift+Enter` for a new line), and accessible labels.
+- Firebase email/password sign-up and sign-in when Firebase Authentication is configured; guest access stays available until the project is configured.
 
 ## Requirements and cost
 
@@ -58,6 +59,10 @@ The repository root contains the Vercel configuration. Import `SELVA-MEENAKSHI-K
 
 For live AI answers, set `AI_PROVIDER=bedrock`, `AWS_REGION=us-east-1`, and `BEDROCK_MODEL_ID=us.amazon.nova-lite-v1:0` in the Vercel project's Environment Variables, and configure AWS credentials securely for the backend. Never add AWS credentials to GitHub or the frontend. Bedrock model calls are billed by usage. The Vercel Hobby hosting plan is free within its personal-project limits, but it does not make Bedrock inference free. Ollama is local to your computer and cannot provide AI answers to the deployed site.
 
+Firebase email/password and Google sign-in are enabled for the `study-masster` project. The public Firebase web-app config is initialized in `frontend/src/firebase.js`; optional `VITE_FIREBASE_*` environment variables can override it. Add the deployed Vercel hostname under **Authentication → Settings → Authorized domains** in Firebase. Conversation history remains in the current browser session; Firebase Auth does not sync chat history between devices. Firebase web-app config is public client metadata; never place Firebase service-account keys or other private credentials in frontend code.
+
+The sign-in gate protects the web interface. The existing AI API endpoints still need server-side Firebase token verification before treating them as private; do not use the frontend sign-in gate alone as an API security boundary.
+
 Pushing changes to the connected GitHub repository starts a new Vercel deployment. Check the Vercel project's Deployments page to confirm the latest build is ready.
 
 ## Configuration
@@ -69,6 +74,10 @@ Pushing changes to the connected GitHub repository starts a new Vercel deploymen
 | `MODEL_TIMEOUT_SECONDS` | `45` | Maximum response wait |
 | `MAX_HISTORY_MESSAGES` | `12` | Conversation turns included as context |
 | `MAX_MESSAGE_CHARS` | `4000` | Per-message API input limit |
+| `VITE_FIREBASE_API_KEY` | Built-in config | Optional Firebase web config override |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Built-in config | Optional Firebase web config override |
+| `VITE_FIREBASE_PROJECT_ID` | Built-in config | Optional Firebase web config override |
+| `VITE_FIREBASE_APP_ID` | Built-in config | Optional Firebase web config override |
 
 Health check: `GET /api/health`. Study chat and AI-backed alternate explanations/code/notes: `POST /api/chat`. AI quiz generation: `POST /api/quiz`.
 

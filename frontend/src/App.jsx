@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { BookOpen, Bot, Check, ChevronDown, CircleHelp, Clock3, Code2, FileText, GraduationCap, History, Lightbulb, LoaderCircle, MessageCircle, Plus, RotateCcw, Send, Sparkles, WandSparkles, X, Menu, Trash2, ClipboardList, Settings } from 'lucide-react';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import AuthScreen from './AuthScreen.jsx';
+import { firebaseAuth, firebaseConfigured } from './firebase.js';
 
 const modes = [
   { id: 'beginner', name: 'Beginner', note: 'Simple explanations', icon: Lightbulb },
@@ -14,8 +17,8 @@ const starters = [
 ];
 const initialMessage = { role: 'assistant', content: 'Hi! I’m your Study Master. Ask me about programming or computer science, and we’ll work through it together.' };
 function freshConversation() { return { id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, title: 'New conversation', mode: 'beginner', messages: [initialMessage], updatedAt: Date.now() }; }
-function loadSession() {
-  try { const saved = JSON.parse(sessionStorage.getItem('studybuddy-session') || '{}'); return saved.conversations?.length ? saved : { conversations: [freshConversation()], activeId: null }; } catch { return { conversations: [freshConversation()], activeId: null }; }
+function loadSession(storageKey) {
+  try { const saved = JSON.parse(sessionStorage.getItem(storageKey) || '{}'); return saved.conversations?.length ? saved : { conversations: [freshConversation()], activeId: null }; } catch { return { conversations: [freshConversation()], activeId: null }; }
 }
 function StudyChart({ data }) {
   const valid = data && ['bar', 'line', 'pie'].includes(data.type)
@@ -87,8 +90,8 @@ function inlineMarkdown(value) {
   return value.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, i) => part.startsWith('`') ? <code key={i}>{part.slice(1, -1)}</code> : part.startsWith('**') ? <strong key={i}>{part.slice(2, -2)}</strong> : part);
 }
 
-export default function App() {
-  const initial = useRef(loadSession()).current;
+function StudyMasterApp({ user, storageKey, onSignOut, onSignIn }) {
+  const initial = useRef(loadSession(storageKey)).current;
   const [conversations, setConversations] = useState(initial.conversations);
   const [activeId, setActiveId] = useState(initial.activeId || initial.conversations[0]?.id);
   const active = conversations.find(item => item.id === activeId) || conversations[0] || freshConversation();
@@ -113,7 +116,7 @@ export default function App() {
   const messages = active.messages;
   const lastUser = [...messages].reverse().find(message => message.role === 'user')?.content || '';
 
-  useEffect(() => { sessionStorage.setItem('studybuddy-session', JSON.stringify({ conversations, activeId })); }, [conversations, activeId]);
+  useEffect(() => { sessionStorage.setItem(storageKey, JSON.stringify({ conversations, activeId })); }, [conversations, activeId, storageKey]);
   useEffect(() => { endRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'end' }); }, [messages, busy, error]);
   function updateActive(transform) { setConversations(current => current.map(item => { if (item.id !== activeId) return item; const updated = transform(item); return { ...updated, messages: updated.messages.slice(-80) }; })); }
   function addMessage(message) { updateActive(item => ({ ...item, title: item.messages.length === 1 && message.role === 'user' ? message.content.slice(0, 52) : item.title, messages: [...item.messages, message], updatedAt: Date.now() })); }
@@ -159,7 +162,7 @@ export default function App() {
       <button className="mobile-close" onClick={() => setMobileHistory(false)} aria-label="Close recent questions"><X/></button>
     </aside>
     <main className="main">
-      <header className="topbar"><button className="mobile-menu" onClick={() => setMobileHistory(true)} aria-label="Open navigation"><Menu size={19}/></button><div className="topbar-label">YOUR LEARNING SPACE</div><button className="reset-button" onClick={newChat}><RotateCcw size={15}/><span>New chat</span></button></header>
+      <header className="topbar"><button className="mobile-menu" onClick={() => setMobileHistory(true)} aria-label="Open navigation"><Menu size={19}/></button><div className="topbar-label">YOUR LEARNING SPACE</div>{user && <div className="account-pill" title={user.email || 'Signed in'}>{user.email || 'Signed in'}</div>}{user ? <button className="account-signout" onClick={onSignOut}>Sign out</button> : <button className="account-signin" onClick={onSignIn}>Sign in</button>}<button className="reset-button" onClick={newChat}><RotateCcw size={15}/><span>New chat</span></button></header>
       <section className="content">
         {view === 'chat' && <>
           {messages.length === 1 && <><div className="welcome"><div className="welcome-icon"><Sparkles size={22}/></div><p className="eyebrow">A FRIENDLY PLACE TO FIGURE IT OUT</p><h1>What would you like<br/>to <span>learn today?</span></h1><p className="welcome-copy">Your personal AI study companion for understanding concepts, practising skills, and preparing for exams.</p></div>
@@ -178,4 +181,26 @@ export default function App() {
     </main>
     {confirmClear && <div className="dialog-backdrop" role="presentation"><section className="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="clear-title"><h2 id="clear-title">Clear this session’s history?</h2><p>This removes the conversations saved in this browser tab.</p><div><button onClick={()=>setConfirmClear(false)}>Cancel</button><button className="danger-button" onClick={clearHistory}>Clear history</button></div></section></div>}
   </div>;
+}
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(firebaseConfigured);
+  const [guest, setGuest] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+
+  useEffect(() => {
+    if (!firebaseAuth) return undefined;
+    return onAuthStateChanged(firebaseAuth, nextUser => {
+      setUser(nextUser);
+      setLoading(false);
+      setGuest(false);
+    });
+  }, []);
+
+  if (loading) return <main className="auth-screen"><div className="auth-loading"><span className="auth-spinner"/>Checking your sign-in…</div></main>;
+  if (firebaseConfigured && !user && !guest) return <AuthScreen auth={firebaseAuth} configured onGuest={() => setGuest(true)}/>;
+  if (!firebaseConfigured && authOpen) return <AuthScreen configured={false} onGuest={() => setAuthOpen(false)}/>;
+  const storageKey = user ? `study-master-session-${user.uid}` : 'studybuddy-session';
+  return <StudyMasterApp key={user?.uid || 'guest'} user={user} storageKey={storageKey} onSignOut={() => signOut(firebaseAuth)} onSignIn={() => setAuthOpen(true)}/>;
 }
