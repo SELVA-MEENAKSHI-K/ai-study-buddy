@@ -1,4 +1,5 @@
 import json
+import re
 from urllib.request import Request, urlopen
 
 from .config import settings
@@ -11,8 +12,13 @@ def _text(result) -> str:
         content = value.get("content", [])
         text = "\n".join(part.get("text", "") for part in content if isinstance(part, dict))
         if text:
-            return text.strip()
-    return str(result).strip()
+            value = text
+        else:
+            value = str(result)
+    else:
+        value = str(result)
+    value = re.sub(r"<thinking>.*?</thinking>", "", value, flags=re.IGNORECASE | re.DOTALL)
+    return value.strip()
 
 
 def answer(
