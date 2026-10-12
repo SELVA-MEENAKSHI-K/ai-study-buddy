@@ -64,12 +64,12 @@ def answer(
             region_name=settings.region,
         )
 
+    model_options = {"boto_session": boto_session} if boto_session else {"region_name": settings.region}
     model = BedrockModel(
         model_id=settings.model_id,
-        region_name=settings.region,
         max_tokens=900,
         temperature=0.4,
-        boto_session=boto_session,
+        **model_options,
     )
     agent = Agent(model=model, system_prompt=SYSTEM_PROMPT, tools=[learning_resource_finder])
     return _text(agent(prompt))

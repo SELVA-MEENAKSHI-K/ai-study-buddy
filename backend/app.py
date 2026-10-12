@@ -57,7 +57,7 @@ async def chat(payload: ChatRequest, http_request: Request):
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="The study buddy took too long to respond. Please try again.")
     except Exception as exc:
-        logger.exception("AI request failed (%s)", type(exc).__name__)
+        logger.warning("AI request failed (%s)", type(exc).__name__)
         hint = "Check that Ollama is running and the selected model is downloaded, then retry." if settings.provider == "ollama" else "Check your AWS Bedrock setup, then retry."
         raise HTTPException(status_code=503, detail=f"The AI service is unavailable right now. {hint}")
     if not response:
