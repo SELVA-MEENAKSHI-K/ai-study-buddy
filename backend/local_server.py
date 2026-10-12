@@ -31,7 +31,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, {"detail": "Not found"})
 
     def do_POST(self) -> None:
-        if self.path != "/api/chat":
+        if self.path not in {"/api/chat", "/api/quiz"}:
             self._send(404, {"detail": "Not found"})
             return
         try:
@@ -40,16 +40,43 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(413, {"detail": "Please send a smaller message."})
                 return
             payload = json.loads(self.rfile.read(length))
-            question = str(payload.get("question", "")).strip()
             mode = payload.get("mode", "beginner")
+            if mode not in {"beginner", "exam", "practical"}:
+                self._send(422, {"detail": "Please check the selected mode and conversation."})
+                return
+            if self.path == "/api/quiz":
+                topic = str(payload.get("topic", "")).strip()
+                if not topic or len(topic) > 120:
+                    self._send(422, {"detail": "Enter a topic for your quiz (up to 120 characters)."})
+                    return
+                response = answer(f"Create one multiple-choice practice question about: {topic}", mode, [], action="quiz")
+                cleaned = response.strip()
+                if cleaned.startswith("```"):
+                    cleaned = cleaned.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+                try:
+                    quiz = json.loads(cleaned)
+                    if (not isinstance(quiz, dict) or not isinstance(quiz.get("topic"), str)
+                            or not isinstance(quiz.get("question"), str) or not isinstance(quiz.get("options"), list)
+                            or len(quiz["options"]) != 4 or not all(isinstance(item, str) for item in quiz["options"])
+                            or type(quiz.get("correct_index")) is not int or quiz["correct_index"] not in range(4)
+                            or not isinstance(quiz.get("explanation"), str)):
+                        raise ValueError("invalid quiz shape")
+                except (json.JSONDecodeError, ValueError, AttributeError):
+                    self._send(502, {"detail": "The quiz came back in an unreadable format. Please generate another one."})
+                    return
+                self._send(200, quiz)
+                return
+            question = str(payload.get("question", "")).strip()
             history = payload.get("history", [])
+            action = payload.get("action", "chat")
+            allowed_actions = {"chat", "explain_simple", "real_world_example", "exam_answer", "follow_up", "code", "notes"}
             if not question or len(question) > settings.max_message_chars:
                 self._send(422, {"detail": "Please enter a question before sending."})
                 return
-            if mode not in {"beginner", "exam", "practical"} or not isinstance(history, list):
+            if not isinstance(history, list) or action not in allowed_actions:
                 self._send(422, {"detail": "Please check the selected mode and conversation."})
                 return
-            response = answer(question, mode, history[-24:], bool(payload.get("explain_another_way", False)))
+            response = answer(question, mode, history[-24:], bool(payload.get("explain_another_way", False)), action=action)
             if not response:
                 self._send(503, {"detail": "The local model returned an empty response. Please retry."})
                 return

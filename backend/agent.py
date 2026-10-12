@@ -5,6 +5,17 @@ from urllib.request import Request, urlopen
 from .config import settings
 from .prompts import MODE_GUIDANCE, SYSTEM_PROMPT
 
+ACTION_GUIDANCE = {
+    "chat": "Answer the student's study question directly.",
+    "explain_simple": "Explain the same concept in simpler words and shorter sentences. Preserve useful facts.",
+    "real_world_example": "Give a fresh practical example and a relatable real-world analogy for the same concept.",
+    "exam_answer": "Format as an exam-ready answer with Definition, Explanation, Important points, Example, and a short Conclusion.",
+    "follow_up": "Continue from the conversation context and answer the student's follow-up.",
+    "code": "Explain the submitted code step by step. Do not claim it was executed. Distinguish expected output that can be reasoned about from output you have not run. Mention likely errors and fixes where useful.",
+    "notes": "Simplify and summarize only the supplied study notes. Extract key points and definitions. Clearly mark any extra context not present in the notes; do not invent missing facts.",
+    "quiz": "Create exactly one multiple-choice question about the requested topic. Return only a JSON object with keys topic, question, options (array of exactly four strings), correct_index (integer 0 through 3), explanation (string). Ensure exactly one best answer and a helpful explanation.",
+}
+
 
 def _text(result) -> str:
     value = getattr(result, "message", None)
@@ -27,12 +38,16 @@ def answer(
     history: list[dict],
     alternate: bool = False,
     vercel_oidc_token: str | None = None,
+    action: str = "chat",
 ) -> str:
     transcript = "\n".join(f"{item['role'].capitalize()}: {item['content']}" for item in history[-settings.max_history_messages:])
     mode_text = MODE_GUIDANCE[mode]
     if alternate:
         mode_text += " The student wants the previous explanation another way: give a simpler version, then one practical example and one real-world analogy. Do not ask them to repeat the original question."
-    prompt = f"Learning mode: {mode}. {mode_text}\n\nRecent conversation (context only):\n{transcript or '(none)'}\n\nStudent's current question: {question}"
+    action_text = ACTION_GUIDANCE.get(action, ACTION_GUIDANCE["chat"])
+    if alternate:
+        action_text += " Give a simpler explanation, then one practical example and one real-world analogy."
+    prompt = f"Learning mode: {mode}. {mode_text}\nTask: {action_text}\n\nRecent conversation (context only):\n{transcript or '(none)'}\n\nStudent's current request: {question}"
     if settings.provider == "ollama":
         payload = json.dumps({
             "model": settings.ollama_model,
