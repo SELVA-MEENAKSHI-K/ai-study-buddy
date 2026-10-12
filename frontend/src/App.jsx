@@ -31,7 +31,7 @@ function StudyChart({ data }) {
     && (data.type !== 'pie' || data.values.some(value => value > 0));
   if (!valid) return null;
 
-  const colors = ['#2563EB', '#F97316', '#1E3A8A', '#60A5FA', '#FB923C', '#93C5FD'];
+  const colors = ['#EA580C', '#F97316', '#9A3412', '#FB923C', '#FDBA74', '#FED7AA'];
   const unit = typeof data.unit === 'string' && data.unit.length <= 16 ? data.unit : '';
   const note = typeof data.note === 'string' && data.note.length <= 180 ? data.note : '';
   const max = Math.max(...data.values, 1);
@@ -60,7 +60,7 @@ function StudyChart({ data }) {
         {data.type === 'pie' ? <g>{slices}</g> : <>
           {[0, 0.5, 1].map((fraction, index) => { const y = baseline - plotHeight * fraction; return <g key={index}><line x1={left} x2={width - right} y1={y} y2={y} className="chart-gridline"/><text x={left - 8} y={y + 4} textAnchor="end" className="chart-axis-label">{formatValue(max * fraction)}</text></g>; })}
           {data.type === 'bar' && data.values.map((value, index) => { const slot = (width - left - right) / data.values.length; const barWidth = Math.min(46, slot * 0.58); const height = (value / max) * plotHeight; return <g key={index}><rect x={xAt(index) - barWidth / 2} y={baseline - height} width={barWidth} height={height} rx="5" fill={colors[index]}/><text x={xAt(index)} y={baseline - height - 8} textAnchor="middle" className="chart-value-label">{formatValue(value)}</text><text x={xAt(index)} y={baseline + 19} textAnchor="middle" className="chart-axis-label">{data.labels[index]}</text></g>; })}
-          {data.type === 'line' && <><polyline points={data.values.map((value, index) => `${xAt(index)},${yAt(value)}`).join(' ')} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>{data.values.map((value, index) => <g key={index}><circle cx={xAt(index)} cy={yAt(value)} r="5" fill="#F97316"/><title>{data.labels[index]}: {formatValue(value)}</title><text x={xAt(index)} y={yAt(value) - 11} textAnchor="middle" className="chart-value-label">{formatValue(value)}</text><text x={xAt(index)} y={baseline + 19} textAnchor="middle" className="chart-axis-label">{data.labels[index]}</text></g>)}</>}
+          {data.type === 'line' && <><polyline points={data.values.map((value, index) => `${xAt(index)},${yAt(value)}`).join(' ')} fill="none" stroke="#EA580C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>{data.values.map((value, index) => <g key={index}><circle cx={xAt(index)} cy={yAt(value)} r="5" fill="#F97316"/><title>{data.labels[index]}: {formatValue(value)}</title><text x={xAt(index)} y={yAt(value) - 11} textAnchor="middle" className="chart-value-label">{formatValue(value)}</text><text x={xAt(index)} y={baseline + 19} textAnchor="middle" className="chart-axis-label">{data.labels[index]}</text></g>)}</>}
         </>}
       </svg>
       {data.type === 'pie' && <ul className="chart-legend">{data.labels.map((label, index) => <li key={label}><span style={{ backgroundColor: colors[index] }}/><span>{label}</span><strong>{formatValue(data.values[index])}</strong></li>)}</ul>}
