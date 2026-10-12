@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -37,13 +37,23 @@ async def health():
 
 
 @app.post("/api/chat")
-async def chat(request: ChatRequest):
-    question = request.question.strip()
+async def chat(payload: ChatRequest, http_request: Request):
+    question = payload.question.strip()
     if not question:
         raise HTTPException(status_code=422, detail="Please enter a question before sending.")
-    history = [item.model_dump() for item in request.history]
+    history = [item.model_dump() for item in payload.history]
     try:
-        response = await asyncio.wait_for(asyncio.to_thread(answer, question, request.mode, history, request.explain_another_way), timeout=settings.timeout_seconds)
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                answer,
+                question,
+                payload.mode,
+                history,
+                payload.explain_another_way,
+                http_request.headers.get("x-vercel-oidc-token"),
+            ),
+            timeout=settings.timeout_seconds,
+        )
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="The study buddy took too long to respond. Please try again.")
     except Exception as exc:

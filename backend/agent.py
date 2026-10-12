@@ -15,7 +15,13 @@ def _text(result) -> str:
     return str(result).strip()
 
 
-def answer(question: str, mode: str, history: list[dict], alternate: bool = False) -> str:
+def answer(
+    question: str,
+    mode: str,
+    history: list[dict],
+    alternate: bool = False,
+    vercel_oidc_token: str | None = None,
+) -> str:
     transcript = "\n".join(f"{item['role'].capitalize()}: {item['content']}" for item in history[-settings.max_history_messages:])
     mode_text = MODE_GUIDANCE[mode]
     if alternate:
@@ -36,10 +42,34 @@ def answer(question: str, mode: str, history: list[dict], alternate: bool = Fals
             result = json.loads(response.read().decode("utf-8"))
         return result.get("message", {}).get("content", "").strip()
 
+    import boto3
+
     from strands import Agent
     from strands.models import BedrockModel
     from .tools import learning_resource_finder
 
-    model = BedrockModel(model_id=settings.model_id, region_name=settings.region, max_tokens=900, temperature=0.4)
+    boto_session = None
+    if settings.aws_role_arn and vercel_oidc_token:
+        sts = boto3.client("sts", region_name=settings.region)
+        assumed = sts.assume_role_with_web_identity(
+            RoleArn=settings.aws_role_arn,
+            RoleSessionName="study-buddy-vercel",
+            WebIdentityToken=vercel_oidc_token,
+            DurationSeconds=900,
+        )["Credentials"]
+        boto_session = boto3.Session(
+            aws_access_key_id=assumed["AccessKeyId"],
+            aws_secret_access_key=assumed["SecretAccessKey"],
+            aws_session_token=assumed["SessionToken"],
+            region_name=settings.region,
+        )
+
+    model = BedrockModel(
+        model_id=settings.model_id,
+        region_name=settings.region,
+        max_tokens=900,
+        temperature=0.4,
+        boto_session=boto_session,
+    )
     agent = Agent(model=model, system_prompt=SYSTEM_PROMPT, tools=[learning_resource_finder])
     return _text(agent(prompt))
