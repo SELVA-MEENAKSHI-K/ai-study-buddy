@@ -1,4 +1,4 @@
-# AI Study Buddy evaluation
+# Study Master evaluation
 
 ## Automated frontend checks
 

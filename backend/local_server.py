@@ -85,18 +85,18 @@ class Handler(BaseHTTPRequestHandler):
             self._send(503, {"detail": "The local AI is unavailable. Check that Ollama is running with the selected model, then retry."})
 
     def log_message(self, format: str, *args: object) -> None:
-        print("Study Buddy: " + format % args)
+        print("Study Master: " + format % args)
 
 
 def main() -> None:
     if settings.provider != "ollama":
         raise SystemExit("Set AI_PROVIDER=ollama in backend/.env before starting local_server.")
     server = ThreadingHTTPServer(("127.0.0.1", 8000), Handler)
-    print(f"AI Study Buddy local backend ready at http://127.0.0.1:8000 (model: {settings.ollama_model})")
+    print(f"Study Master local backend ready at http://127.0.0.1:8000 (model: {settings.ollama_model})")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nAI Study Buddy backend stopped.")
+        print("\nStudy Master backend stopped.")
     finally:
         server.server_close()
 

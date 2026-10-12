@@ -1,6 +1,6 @@
-# AI Study Buddy: a friendly agent for learning computer science
+# Study Master: a friendly agent for learning computer science
 
-College students learning programming often hit a frustrating wall: a textbook definition makes sense on paper, but the idea still does not click. AI Study Buddy is a learning companion for that moment. It helps students ask questions about programming and computer science, understand difficult ideas in plain language, practise for exams, and make progress when they are stuck.
+College students learning programming often hit a frustrating wall: a textbook definition makes sense on paper, but the idea still does not click. Study Master is a learning companion for that moment. It helps students ask questions about programming and computer science, understand difficult ideas in plain language, practise for exams, and make progress when they are stuck.
 
 ## What it does and who it is for
 
@@ -26,7 +26,7 @@ The main implementation challenge was making the same student workflow operate t
 
 React/Vite sends requests to FastAPI. FastAPI calls a Strands agent, which invokes Nova Lite through Amazon Bedrock or, for a local demo, the Ollama service. AWS IAM provides the scoped role and OIDC trust used by the deployed Bedrock path. Vercel hosts the existing web deployment; Vercel is the hosting provider, not an AWS service. The reusable agent tool is a curated learning-resource finder for selected computer-science topics.
 
-The existing deployed chat version can be viewed at [AI Study Buddy](https://ai-study-buddy-lovat-delta.vercel.app/). It predates the latest interface and quiz/code/notes changes, so use it only as proof of the earlier working Bedrock chat. The enhanced source code is in the public [GitHub repository](https://github.com/SELVA-MEENAKSHI-K/ai-study-buddy); a new deployment is still needed before the live app demonstrates these changes.
+The deployed Study Master app can be viewed at [Study Master](https://ai-study-buddy-92gax3enh-selvameenakshik-1506s-projects.vercel.app/). The source is in the public [GitHub repository](https://github.com/SELVA-MEENAKSHI-K/study-master).
 
 I learned to keep model credentials on the backend, use short-lived OIDC role credentials for a deployed Bedrock call, and treat agent features as complete only when both the user action and API path work. I also learned that mock tests can verify interaction behavior without proving model quality; live model review and student feedback remain separate evaluation steps.
 

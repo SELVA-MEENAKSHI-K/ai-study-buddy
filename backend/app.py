@@ -14,8 +14,8 @@ from .agent import answer
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("studybuddy")
-app = FastAPI(title="AI Study Buddy API", version="1.0.0")
+logger = logging.getLogger("StudyMaster")
+app = FastAPI(title="Study Master API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 _request_times: dict[str, list[float]] = {}
 _RATE_WINDOW_SECONDS = 60
@@ -82,7 +82,7 @@ async def chat(payload: ChatRequest, http_request: Request):
             timeout=settings.timeout_seconds,
         )
     except asyncio.TimeoutError:
-        raise HTTPException(status_code=504, detail="The study buddy took too long to respond. Please try again.")
+        raise HTTPException(status_code=504, detail="The Study Master took too long to respond. Please try again.")
     except Exception as exc:
         logger.warning("AI request failed (%s)", type(exc).__name__)
         hint = "Check that Ollama is running and the selected model is downloaded, then retry." if settings.provider == "ollama" else "Check your AWS Bedrock setup, then retry."
