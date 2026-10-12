@@ -2,6 +2,8 @@
 
 A responsive learning companion for college students studying programming and computer science. The React client talks to a FastAPI backend; the backend creates a Strands Agents SDK agent using Amazon Bedrock. Model credentials stay on the server and are read from the standard AWS credential chain (local AWS profile, environment, or IAM role).
 
+**Live demo:** [Open AI Study Buddy on Vercel](https://ai-study-buddy-i7ckh8rrq-selvameenakshik-1506s-projects.vercel.app/). The current live deployment may not yet include every feature in the latest GitHub version; see the deployment notes below.
+
 ## Features
 
 - Friendly concept explanations with Beginner, Exam prep, and Practical response modes.
@@ -55,6 +57,8 @@ The repository root contains the Vercel configuration. Import `SELVA-MEENAKSHI-K
 
 For live AI answers, set `AI_PROVIDER=bedrock`, `AWS_REGION=us-east-1`, and `BEDROCK_MODEL_ID=us.amazon.nova-lite-v1:0` in the Vercel project's Environment Variables, and configure AWS credentials securely for the backend. Never add AWS credentials to GitHub or the frontend. Bedrock model calls are billed by usage. The Vercel Hobby hosting plan is free within its personal-project limits, but it does not make Bedrock inference free. Ollama is local to your computer and cannot provide AI answers to the deployed site.
 
+The Vercel link above points to the currently deployed build. The latest GitHub source also includes the newer quiz, code explainer, notes simplifier, and refreshed interface; those changes need a successful Vercel production deployment before they appear in the live demo. After pushing updates, check the Vercel project's Deployments page and open the production deployment to confirm the live version.
+
 ## Configuration
 
 | Variable | Default | Purpose |
@@ -85,4 +89,4 @@ npm test
 
 ## Challenge article and evaluation
 
-See [`docs/builder-center-article.md`](docs/builder-center-article.md) for the 500+ word draft and [`docs/challenge-checklist.md`](docs/challenge-checklist.md) for submission tasks. Review the draft against the actual evaluation results and tools used before publishing. The AWS Builder Center challenge page lists the qualifying period as October 9 to October 12, 2026 at 1:00 PM Pacific Time; confirm current eligibility on the challenge page before spending time on a late submission. Earlier app versions were deployed to Vercel and tested with a live Bedrock answer; the newly added quiz/code/notes and UI features are local changes until a separately approved deployment. The article has not been published.
+See [`docs/builder-center-article.md`](docs/builder-center-article.md) for the 500+ word draft and [`docs/challenge-checklist.md`](docs/challenge-checklist.md) for submission tasks. Review the draft against the actual evaluation results and tools used before publishing. The AWS Builder Center challenge page lists the qualifying period as October 9 to October 12, 2026 at 1:00 PM Pacific Time; confirm current eligibility on the challenge page before spending time on a late submission. An earlier app version was deployed to Vercel and tested with a live Bedrock answer. The latest quiz/code/notes and UI changes are in GitHub but still need a successful production deployment to appear in the live demo. The article has not been published.
